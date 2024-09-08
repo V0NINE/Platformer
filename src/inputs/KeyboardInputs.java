@@ -21,9 +21,9 @@ public class KeyboardInputs implements KeyListener{
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_SPACE:
+                gamePanel.getGame().getPlayer().setJumping(true);
                 break;
             case KeyEvent.VK_W:
-                System.out.println("UP WE GO!");
                 gamePanel.getGame().getPlayer().setUp(true);
                 break;
             case KeyEvent.VK_S:

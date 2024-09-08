@@ -20,6 +20,11 @@ public class Player extends Entity {
     private int[][] lvlData;
     private float xDrawOffset = 21*Game.SCALE, yDrawOffset = 4*Game.SCALE;
 
+    private float airSpeed = -1.3f;
+    private float gravity = 0.04f;
+    private boolean jump;
+    private boolean onAir = false;
+
     public Player(float x, float y, int width, int height) {
         super(x, y, width, height);
         loadAnimations();
@@ -61,10 +66,8 @@ public class Player extends Entity {
             {
                 animationIndex = 0;
                 attacking = false;
+                jump = false;
             }
-
-            // animationIndex = (animationIndex+1)%GetSpriteAmount(playerAction);
-            // attacking = false;
         }
     }
 
@@ -75,28 +78,38 @@ public class Player extends Entity {
 
     public void updatePosition() {
         moving = false;
+                
+        if(onAir == false)
+            airSpeed = -1.4f; 
 
-        if(!left && !right && !up && !down)
+        if(!left && !right && !jump)
             return;
 
-        float xSpeed = 0, ySpeed = 0;
+        float xSpeed = 0;
 
         if(right && !left)
-            xSpeed = playerSpeed;
+            xSpeed += playerSpeed;
         else if(left && !right)
-            xSpeed = -playerSpeed;
+            xSpeed -= playerSpeed;
 
-        if(up && !down)
-            ySpeed = -playerSpeed;
-        else if(down && !up)
-            ySpeed = playerSpeed;
-        
-        if(CanMoveHere(hitbox.x+xSpeed, hitbox.y+ySpeed, hitbox.width, hitbox.height, lvlData))
+        if(jump) 
+            onAir = true;
+
+        if(onAir && CanMoveHere(hitbox.x+xSpeed, hitbox.y+airSpeed-gravity, hitbox.width, hitbox.height, lvlData))
         {
-            hitbox.x += xSpeed;
-            hitbox.y += ySpeed;
-            moving = true;
+            hitbox.y += airSpeed;
+            airSpeed += gravity;
+        } else 
+        {
+            onAir = false;
         }
+
+        // if(CanMoveHere(hitbox.x+xSpeed, hitbox.y+ySpeed, hitbox.width, hitbox.height, lvlData))
+        // {
+        //     hitbox.x += xSpeed;
+        //     hitbox.y += ySpeed;
+        //     moving = true;
+        // }
 
     }
 
@@ -111,6 +124,9 @@ public class Player extends Entity {
         if(attacking)
             this.playerAction = ATTACK_1;
 
+        if(jump)
+            this.playerAction = JUMP;
+
         if(startAnimation != playerAction)
             resetAnimationTick();
     }
@@ -120,10 +136,15 @@ public class Player extends Entity {
         right = false;
         up = false;
         down = false;
+        jump = false;
     }
 
     public void setAttacking(boolean attacking) {
         this.attacking = attacking;
+    }
+
+    public void setJumping(boolean jump) {
+        this.jump = jump;
     }
 
     public boolean isLeft() {
